@@ -25,9 +25,10 @@ class EventAdapter(private var eventList: MutableList<EventModel>, private val o
     }
 
     // เพิ่มฟังก์ชันเพื่ออัปเดตข้อมูลใน RecyclerView
-    fun updateEventList(newEventList: MutableList<EventModel>) {
-        eventList = newEventList
-        notifyDataSetChanged() // อัปเดต RecyclerView
+    fun updateEventList(newEventList: List<EventModel>) {
+        eventList.clear()
+        eventList.addAll(newEventList)
+        notifyDataSetChanged()
     }
 
     // ViewHolder ที่ใช้แสดงข้อมูลกิจกรรม

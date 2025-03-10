@@ -1,7 +1,9 @@
 package com.example.newhomepage
 
+
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -31,11 +33,12 @@ class LoginActivity : AppCompatActivity() {
         authRepository = AuthRepository()
         sessionManager = SessionManager(this)
 
+
         // ตรวจสอบว่าผู้ใช้เข้าสู่ระบบอยู่หรือไม่
-        if (sessionManager.isLoggedIn()) {
-            navigateToMainActivity()
-            return
-        }
+//        if (sessionManager.isLoggedIn()) {
+//            navigateToMainActivity()
+//            return
+//        }
 
         // ค้นหา view elements
         emailEditText = findViewById(R.id.emailEditText)
@@ -55,22 +58,49 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // เพิ่ม Log เพื่อดีบัก
+            Log.d("LoginDebug", "Attempting login with email: $email")
+
             // เรียกใช้ API สำหรับเข้าสู่ระบบ
             lifecycleScope.launch {
                 try {
+                    Log.d("LoginDebug", "Calling API for login")
                     val result = authRepository.loginUser(email, password)
 
                     result.onSuccess { (token, user) ->
-                        // บันทึกข้อมูล token และข้อมูลผู้ใช้
-                        sessionManager.saveAuthToken(token)
-                        sessionManager.saveUser(user)
+                        Log.d("LoginDebug", "Login successful, token: $token")
+                        Log.d("LoginDebug", "User: ${user.username}, ID: ${user.id}")
 
-                        Toast.makeText(this@LoginActivity, "เข้าสู่ระบบสำเร็จ", Toast.LENGTH_SHORT).show()
-                        navigateToMainActivity()
+                        try {
+                            // บันทึกข้อมูล token และข้อมูลผู้ใช้
+                            sessionManager.saveAuthToken(token)
+                            sessionManager.saveUser(user)
+                            Log.d("LoginDebug", "Session saved")
+
+                            Toast.makeText(this@LoginActivity, "เข้าสู่ระบบสำเร็จ", Toast.LENGTH_SHORT).show()
+
+                            // แยกฟังก์ชัน navigateToMainActivity เพื่อการดีบัก
+                            try {
+                                Log.d("LoginDebug", "Attempting to navigate to MainActivity")
+                                val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                startActivity(intent)
+                                Log.d("LoginDebug", "Started MainActivity")
+                                finish()
+                            } catch (e: Exception) {
+                                Log.e("LoginDebug", "Error navigating to MainActivity: ${e.message}", e)
+                                Toast.makeText(this@LoginActivity, "ไม่สามารถเปิดหน้าหลักได้: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        } catch (e: Exception) {
+                            Log.e("LoginDebug", "Error saving session: ${e.message}", e)
+                            Toast.makeText(this@LoginActivity, "ไม่สามารถบันทึกข้อมูลผู้ใช้: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
                     }.onFailure { exception ->
+                        Log.e("LoginDebug", "Login failed: ${exception.message}", exception)
                         Toast.makeText(this@LoginActivity, "เข้าสู่ระบบไม่สำเร็จ: ${exception.message}", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
+                    Log.e("LoginDebug", "Exception during login: ${e.message}", e)
                     Toast.makeText(this@LoginActivity, "เกิดข้อผิดพลาด: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }

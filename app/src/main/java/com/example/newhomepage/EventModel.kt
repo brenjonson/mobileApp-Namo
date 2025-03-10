@@ -1,9 +1,11 @@
+// แก้ไขไฟล์ app/src/main/java/com/example/newhomepage/EventModel.kt
 package com.example.newhomepage
 
 import android.os.Parcel
 import android.os.Parcelable
 
 data class EventModel(
+    val id: Int, // เพิ่มฟิลด์ id
     val eventName: String,
     val eventDate: String,
     val imageResId: Int,
@@ -11,6 +13,7 @@ data class EventModel(
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
+        parcel.readInt(), // อ่าน id
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readInt(),
@@ -18,6 +21,7 @@ data class EventModel(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id) // เขียน id
         parcel.writeString(eventName)
         parcel.writeString(eventDate)
         parcel.writeInt(imageResId)

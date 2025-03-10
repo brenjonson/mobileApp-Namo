@@ -1,6 +1,7 @@
 package com.example.newhomepage
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -78,15 +79,19 @@ class RegisterActivity : AppCompatActivity() {
             // เรียกใช้ API สำหรับลงทะเบียน
             lifecycleScope.launch {
                 try {
+                    Log.d("RegisterDebug", "Calling API with username: $username, email: $email")
                     val result = authRepository.registerUser(username, email, password)
 
                     result.onSuccess { userId ->
+                        Log.d("RegisterDebug", "Registration successful: User ID=$userId")
                         Toast.makeText(this@RegisterActivity, "ลงทะเบียนสำเร็จ", Toast.LENGTH_SHORT).show()
                         finish() // กลับไปยังหน้าก่อนหน้า (หน้าเข้าสู่ระบบ)
                     }.onFailure { exception ->
+                        Log.e("RegisterDebug", "Registration failed: ${exception.message}", exception)
                         Toast.makeText(this@RegisterActivity, "ลงทะเบียนไม่สำเร็จ: ${exception.message}", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
+                    Log.e("RegisterDebug", "Exception during registration: ${e.message}", e)
                     Toast.makeText(this@RegisterActivity, "เกิดข้อผิดพลาด: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }

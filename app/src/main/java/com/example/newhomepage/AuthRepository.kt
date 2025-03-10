@@ -1,5 +1,6 @@
 package com.example.newhomepage.repositories
 
+import android.util.Log
 import com.example.newhomepage.api.RetrofitClient
 import com.example.newhomepage.api.models.LoginRequest
 import com.example.newhomepage.api.models.RegisterRequest
@@ -10,15 +11,23 @@ class AuthRepository {
 
     suspend fun registerUser(username: String, email: String, password: String): Result<Int> {
         return try {
+            Log.d("AuthRepository", "Creating RegisterRequest: username=$username, email=$email")
             val request = RegisterRequest(username, email, password)
+            Log.d("AuthRepository", "Sending register request to API")
             val response = apiService.registerUser(request)
 
+            Log.d("AuthRepository", "Register API response code: ${response.code()}")
+
             if (response.isSuccessful && response.body() != null) {
+                Log.d("AuthRepository", "Registration successful: ${response.body()}")
                 Result.success(response.body()?.data ?: -1)
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Registration failed"))
+                val errorMsg = response.errorBody()?.string() ?: "Registration failed"
+                Log.e("AuthRepository", "Registration failed: $errorMsg")
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
+            Log.e("AuthRepository", "Registration exception: ${e.message}", e)
             Result.failure(e)
         }
     }
